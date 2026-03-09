@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ILYB – Terms &amp; Conditions</title>
+  <style>
+    :root { --bg: #1a1a1a; --text: #e8e8e8; --link: #e85a71; --bar: #2d2d2d; }
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 16px; line-height: 1.6; }
+    .lang-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; padding: 12px; background: var(--bar); border-radius: 12px; }
+    .lang-bar button { padding: 8px 14px; border: 1px solid #555; border-radius: 8px; background: var(--bg); color: var(--text); cursor: pointer; font-size: 14px; }
+    .lang-bar button:hover, .lang-bar button.active { background: var(--link); color: #fff; border-color: var(--link); }
+    .content { max-width: 720px; margin: 0 auto; }
+    .content h1 { font-size: 1.75rem; margin-top: 0; }
+    .content h2 { font-size: 1.2rem; margin-top: 1.5em; }
+    .content p { margin: 0.75em 0; }
+    .content ul { margin: 0.75em 0; padding-left: 1.5em; }
+    .content a { color: var(--link); }
+    [data-lang] { display: none; }
+    [data-lang].on { display: block; }
+  </style>
+</head>
+<body>
+  <div class="lang-bar" id="langBar"></div>
+  <div class="content" id="content"></div>
+  <script>
+    var TEXTS = {};
+    const langs = [
+      { code: 'en', label: 'English' },
+      { code: 'uk', label: 'Українська' },
+      { code: 'ru', label: 'Русский' },
+      { code: 'es', label: 'Español' },
+      { code: 'it', label: 'Italiano' },
+      { code: 'fr', label: 'Français' },
+      { code: 'pt', label: 'Português' },
+      { code: 'ca', label: 'Català' },
+      { code: 'zh-Hans', label: '简体中文' },
+      { code: 'de', label: 'Deutsch' }
+    ];
+    function getLang() {
+      const p = new URLSearchParams(location.search);
+      const l = p.get('lang') || 'en';
+      return langs.some(x => x.code === l) ? l : 'en';
+    }
+    function setLang(code) {
+      const url = new URL(location.href);
+      url.searchParams.set('lang', code);
+      history.replaceState(null, '', url);
+      document.querySelectorAll('[data-lang]').forEach(el => { el.classList.toggle('on', el.dataset.lang === code); });
+      document.querySelectorAll('.lang-bar button').forEach(btn => { btn.classList.toggle('active', btn.dataset.lang === code); });
+    }
+    function init() {
+      const bar = document.getElementById('langBar');
+      langs.forEach(({ code, label }) => {
+        const btn = document.createElement('button');
+        btn.textContent = label;
+        btn.dataset.lang = code;
+        btn.classList.toggle('active', code === 'en');
+        btn.onclick = () => setLang(code);
+        bar.appendChild(btn);
+      });
+      const container = document.getElementById('content');
+      Object.keys(TEXTS).forEach(code => {
+        const div = document.createElement('div');
+        div.dataset.lang = code;
+        div.classList.toggle('on', code === getLang());
+        div.innerHTML = TEXTS[code];
+        container.appendChild(div);
+      });
+      setLang(getLang());
+    }
+  </script>
+  <script src="content.js"></script>
+  <script>document.addEventListener('DOMContentLoaded', init);</script>
+</body>
+</html>
