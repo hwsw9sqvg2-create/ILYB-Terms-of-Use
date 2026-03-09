@@ -8,7 +8,7 @@
     :root { --bg: #1a1a1a; --text: #e8e8e8; --link: #e85a71; --bar: #2d2d2d; }
     * { box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 12px 16px; padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); line-height: 1.6; }
-    .lang-bar { display: flex; flex-wrap: nowrap; gap: 6px; margin-bottom: 16px; padding: 10px 0; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; min-width: 0; }
+    .lang-bar { display: flex; flex-wrap: nowrap; gap: 6px; margin-bottom: 16px; padding: 10px 0; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; width: 100%; }
     .lang-bar::-webkit-scrollbar { display: none; }
     .lang-bar button { flex-shrink: 0; padding: 8px 12px; border: 1px solid #555; border-radius: 8px; background: var(--bg); color: var(--text); cursor: pointer; font-size: 13px; }
     .lang-bar button:hover, .lang-bar button.active { background: var(--link); color: #fff; border-color: var(--link); }
@@ -26,54 +26,54 @@
   </style>
 </head>
 <body>
-  <div class="lang-bar" id="langBar"></div>
+  <div class="lang-bar" id="langBar">
+    <button type="button" data-lang="en">English</button>
+    <button type="button" data-lang="uk">Українська</button>
+    <button type="button" data-lang="ru">Русский</button>
+    <button type="button" data-lang="es">Español</button>
+    <button type="button" data-lang="it">Italiano</button>
+    <button type="button" data-lang="fr">Français</button>
+    <button type="button" data-lang="pt">Português</button>
+    <button type="button" data-lang="ca">Català</button>
+    <button type="button" data-lang="zh-Hans">简体中文</button>
+    <button type="button" data-lang="de">Deutsch</button>
+  </div>
   <div class="content" id="content"></div>
   <script>
     var TEXTS = {};
-    const langs = [
-      { code: 'en', label: 'English' },
-      { code: 'uk', label: 'Українська' },
-      { code: 'ru', label: 'Русский' },
-      { code: 'es', label: 'Español' },
-      { code: 'it', label: 'Italiano' },
-      { code: 'fr', label: 'Français' },
-      { code: 'pt', label: 'Português' },
-      { code: 'ca', label: 'Català' },
-      { code: 'zh-Hans', label: '简体中文' },
-      { code: 'de', label: 'Deutsch' }
-    ];
+    var langCodes = ['en','uk','ru','es','it','fr','pt','ca','zh-Hans','de'];
     function getLang() {
-      const p = new URLSearchParams(location.search);
-      const l = p.get('lang') || 'en';
-      return langs.some(x => x.code === l) ? l : 'en';
+      var p = new URLSearchParams(location.search);
+      var l = p.get('lang') || 'en';
+      return langCodes.indexOf(l) >= 0 ? l : 'en';
     }
     function setLang(code) {
-      const url = new URL(location.href);
-      url.searchParams.set('lang', code);
-      history.replaceState(null, '', url);
-      document.querySelectorAll('[data-lang]').forEach(el => { el.classList.toggle('on', el.dataset.lang === code); });
-      document.querySelectorAll('.lang-bar button').forEach(btn => { btn.classList.toggle('active', btn.dataset.lang === code); });
+      try {
+        var url = new URL(location.href);
+        url.searchParams.set('lang', code);
+        history.replaceState(null, '', url);
+      } catch (e) {}
+      document.querySelectorAll('#content [data-lang]').forEach(function(el) { el.classList.toggle('on', el.getAttribute('data-lang') === code); });
+      document.querySelectorAll('#langBar button').forEach(function(btn) { btn.classList.toggle('active', btn.getAttribute('data-lang') === code); });
     }
     function init() {
-      const bar = document.getElementById('langBar');
-      if (!bar) return;
-      langs.forEach(({ code, label }) => {
-        const btn = document.createElement('button');
-        btn.textContent = label;
-        btn.dataset.lang = code;
-        btn.classList.toggle('active', code === getLang());
-        btn.onclick = () => setLang(code);
-        bar.appendChild(btn);
+      var bar = document.getElementById('langBar');
+      var container = document.getElementById('content');
+      if (!bar || !container) return;
+      bar.querySelectorAll('button').forEach(function(btn) {
+        btn.onclick = function() { setLang(btn.getAttribute('data-lang')); };
       });
-      const container = document.getElementById('content');
-      Object.keys(TEXTS).forEach(code => {
-        const div = document.createElement('div');
-        div.dataset.lang = code;
-        div.classList.toggle('on', code === getLang());
-        div.innerHTML = TEXTS[code];
-        container.appendChild(div);
-      });
-      setLang(getLang());
+      var current = getLang();
+      try {
+        Object.keys(TEXTS).forEach(function(code) {
+          var div = document.createElement('div');
+          div.setAttribute('data-lang', code);
+          div.className = code === current ? 'on' : '';
+          div.innerHTML = TEXTS[code];
+          container.appendChild(div);
+        });
+      } catch (e) {}
+      setLang(current);
     }
   </script>
   <script src="content.js"></script>
